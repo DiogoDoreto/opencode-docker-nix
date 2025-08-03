@@ -1,0 +1,6 @@
+contexts/*
+!contexts/global/
+!contexts/global/**
+
+# nix
+/result
