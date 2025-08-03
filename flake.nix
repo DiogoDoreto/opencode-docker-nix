@@ -35,18 +35,18 @@
         name = "opencode";
         tag = "latest";
 
+        fromImage = pkgs.dockerTools.pullImage {
+          imageName = "docker.io/library/debian";
+          imageDigest = "sha256:6ac2c08566499cc2415926653cf2ed7c3aedac445675a013cc09469c9e118fdd";
+          hash = "sha256-hl7BPLX/iZ/HJbX2ZJeG26D8H6PiFVtBtQTVUSytiPk=";
+          finalImageTag = "bookworm-slim";
+        };
+
         copyToRoot = pkgs.buildEnv {
           name = "image-root";
           paths = [
-            pkgs.bash
+            pkgs.bashInteractive
             pkgs.coreutils
-            pkgs.dockerTools.caCertificates
-            pkgs.wget
-            pkgs.curl
-            pkgs.gnutar
-            pkgs.unzip
-            pkgs.fzf
-            pkgs.ripgrep
             opencodeCustomVersion
           ];
           pathsToLink = [ "/bin" ];
@@ -59,7 +59,7 @@
             "/app" = {};
           };
           Env = [
-            "HOME=/root"
+            "USER=root"
           ];
           ExposedPorts = {
             "4096/tcp" = {};

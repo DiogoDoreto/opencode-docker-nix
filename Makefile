@@ -4,3 +4,7 @@ result: flake.nix flake.lock
 .PHONY: load-image
 load-image: result
 	podman load -i ./result
+
+.PHONY: clean
+clean:
+	rm -rf ./result
