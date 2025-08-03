@@ -9,22 +9,24 @@
       pkgs = import nixpkgs { inherit system; };
 
       opencodeCustomVersion = let
-        # newer versions are broken (last version checked 0.3.117).
-        # see https://github.com/sst/opencode/issues/1521
-        version = "0.3.61";
-      in pkgs.opencode.overrideAttrs (old: {
-        inherit version;
+        version = "0.3.122";
         src = pkgs.fetchFromGitHub {
           owner = "sst";
           repo = "opencode";
           rev = "v${version}";
-          sha256 = "sha256-0N4VsGa3l8IWy8YMCuDQJoxWxTQtXQBt0scyPPiRwvI=";
+          sha256 = "sha256-JsyUXRfMQ40qQwtaW0Ebh/HlHqzb2D8AvsyJm5Yjm8E=";
         };
+      in pkgs.opencode.overrideAttrs (old: {
+        inherit version src;
         node_modules = old.node_modules.overrideAttrs (oldNM: {
-          outputHash = "sha256-ZMz7vfndYrpjUvhX8L9qv/lXcWKqXZwvfahGAE5EKYo=";
+          outputHash = "sha256-oZa8O0iK5uSJjl6fOdnjqjIuG//ihrj4six3FUdfob8=";
         });
         tui = old.tui.overrideAttrs (oldTui: {
-          vendorHash = "sha256-gvWD8ILnA5NxGpiNMcNFUI6YVLMeRGz45pDk0G5zBjc=";
+          vendorHash = "sha256-LyF5bSglcoLFw0itGWGGW9h71C8qEKC9xAESNnh90Bo=";
+          preBuild = ''
+            cp -r ${src}/packages/sdk/go sdk-go
+            substituteInPlace go.mod --replace "github.com/sst/opencode-sdk-go => ../sdk/go" "github.com/sst/opencode-sdk-go => ./sdk-go"
+          '';
         });
       });
     in
