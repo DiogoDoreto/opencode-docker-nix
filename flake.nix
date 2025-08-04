@@ -9,12 +9,12 @@
       pkgs = import nixpkgs { inherit system; };
 
       opencodeCustomVersion = let
-        version = "0.3.122";
+        version = "0.3.128";
         src = pkgs.fetchFromGitHub {
           owner = "sst";
           repo = "opencode";
           rev = "v${version}";
-          sha256 = "sha256-JsyUXRfMQ40qQwtaW0Ebh/HlHqzb2D8AvsyJm5Yjm8E=";
+          sha256 = "sha256-iS/RJ3PADze0C5wP31YE5nfxm7HJ9A3fVlvU1z8mNGI=";
         };
       in pkgs.opencode.overrideAttrs (old: {
         inherit version src;
@@ -22,16 +22,15 @@
           outputHash = "sha256-oZa8O0iK5uSJjl6fOdnjqjIuG//ihrj4six3FUdfob8=";
         });
         tui = old.tui.overrideAttrs (oldTui: {
-          vendorHash = "sha256-LyF5bSglcoLFw0itGWGGW9h71C8qEKC9xAESNnh90Bo=";
+          vendorHash = "sha256-k8LJq6KBqkAlmAi9XXSKVf1Y+zqrJRzXQwjsHurOLSw=";
           preBuild = ''
             cp -r ${src}/packages/sdk/go sdk-go
             substituteInPlace go.mod --replace "github.com/sst/opencode-sdk-go => ../sdk/go" "github.com/sst/opencode-sdk-go => ./sdk-go"
           '';
         });
       });
-    in
-    {
-      packages.${system}.default = pkgs.dockerTools.buildImage {
+    in {
+      packages.${system}.default = pkgs.dockerTools.buildImageWithNixDb {
         name = "opencode";
         tag = "latest";
 
@@ -47,10 +46,20 @@
           paths = [
             pkgs.bashInteractive
             pkgs.coreutils
+            pkgs.nix
+            pkgs.dockerTools.caCertificates
+            pkgs.cacert
             opencodeCustomVersion
           ];
           pathsToLink = [ "/bin" ];
         };
+
+        extraCommands = ''
+          mkdir -p etc/nix
+          echo "experimental-features = nix-command flakes" > etc/nix/nix.conf
+          mkdir -p etc/ssl/certs
+          ln -sf ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt etc/ssl/certs/ca-certificates.crt
+        '';
 
         config = {
           Cmd = [ "opencode" "." ];
@@ -59,7 +68,9 @@
             "/app" = {};
           };
           Env = [
-            "USER=root"
+            "NIX_PAGER=cat"
+            "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
+            "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
           ];
           ExposedPorts = {
             "4096/tcp" = {};
