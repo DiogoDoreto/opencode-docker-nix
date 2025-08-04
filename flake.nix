@@ -30,35 +30,43 @@
         });
       });
     in {
-      packages.${system}.default = pkgs.dockerTools.buildImageWithNixDb {
+      packages.${system}.default = pkgs.dockerTools.buildLayeredImage {
         name = "opencode";
         tag = "latest";
 
         fromImage = pkgs.dockerTools.pullImage {
-          imageName = "docker.io/library/debian";
-          imageDigest = "sha256:6ac2c08566499cc2415926653cf2ed7c3aedac445675a013cc09469c9e118fdd";
-          hash = "sha256-hl7BPLX/iZ/HJbX2ZJeG26D8H6PiFVtBtQTVUSytiPk=";
-          finalImageTag = "bookworm-slim";
+          imageName = "docker.io/nixos/nix";
+          imageDigest = "sha256:7894650fb65234b35c80010e6ca44149b70a4a216118a6b7e5c6f6ae377c8d21";
+          hash = "sha256-8eY/oaia3fchYReZOn4Darl1s11OEnN49kV4vvRkHsk=";
+          finalImageTag = "latest";
         };
 
-        copyToRoot = pkgs.buildEnv {
-          name = "image-root";
-          paths = [
-            pkgs.bashInteractive
-            pkgs.coreutils
-            pkgs.nix
-            pkgs.dockerTools.caCertificates
-            pkgs.cacert
+        contents = [
+            # pkgs.bashInteractive
+            # pkgs.coreutils
             opencodeCustomVersion
-          ];
-          pathsToLink = [ "/bin" ];
-        };
+        ];
+
+        # copyToRoot = pkgs.buildEnv {
+        #   name = "image-root";
+        #   paths = [
+        #     pkgs.bashInteractive
+        #     pkgs.coreutils
+        #     # pkgs.nix
+        #     # pkgs.dockerTools.caCertificates
+        #     # pkgs.cacert
+        #     opencodeCustomVersion
+        #   ];
+        #   pathsToLink = [ "/bin" ];
+        # };
 
         extraCommands = ''
-          mkdir -p etc/nix
-          echo "experimental-features = nix-command flakes" > etc/nix/nix.conf
-          mkdir -p etc/ssl/certs
-          ln -sf ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt etc/ssl/certs/ca-certificates.crt
+          # mkdir -p etc/nix
+          # echo "experimental-features = nix-command flakes" >> etc/nix/nix.conf
+          # mkdir -p root/.nix-profile/bin
+          # ln -sf ${opencodeCustomVersion}/bin/opencode root/.nix-profile/bin/opencode
+          # mkdir -p etc/ssl/certs
+          # ln -sf ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt etc/ssl/certs/ca-certificates.crt
         '';
 
         config = {
@@ -67,11 +75,11 @@
           Volumes = {
             "/app" = {};
           };
-          Env = [
-            "NIX_PAGER=cat"
-            "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
-            "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
-          ];
+          # Env = [
+          #   "NIX_PAGER=cat"
+          #   "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
+          #   "NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
+          # ];
           ExposedPorts = {
             "4096/tcp" = {};
           };
