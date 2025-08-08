@@ -8,3 +8,8 @@ load-image: result
 .PHONY: clean
 clean:
 	rm -rf ./result
+
+.PHONY: clean-load-image
+clean-load-image:
+	$(MAKE) clean
+	$(MAKE) load-image
