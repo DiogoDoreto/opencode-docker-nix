@@ -9,14 +9,14 @@
       pkgs = import nixpkgs { inherit system; };
 
       opencodeCustomVersion = let
-        version = "0.3.130";
+        version = "0.4.1";
       in pkgs.opencode.overrideAttrs (old: rec {
         inherit version;
         src = pkgs.fetchFromGitHub {
           owner = "sst";
           repo = "opencode";
           rev = "v${version}";
-          sha256 = "sha256-/FWvHekyAM9U5WLptAr2YbcMOZa/twjucSUnlqfu1Y4=";
+          sha256 = "sha256-LEFmfsqhCuGcRK7CEPZb6EZfjOHAyYpUHptXu04fjpQ=";
         };
         buildPhase = ''
           runHook preBuild
@@ -31,11 +31,11 @@
 
           runHook postBuild
         '';
-        tui = old.tui.overrideAttrs (oldTui: {
-          vendorHash = "sha256-qsOL6gsZwEm7YcYO/zoyJAnVmciCjPYqPavV77psybU=";
-        });
         node_modules = old.node_modules.overrideAttrs (oldNM: {
-          outputHash = "sha256-oZa8O0iK5uSJjl6fOdnjqjIuG//ihrj4six3FUdfob8=";
+          outputHash = "sha256-7Hc3FJcg2dA8AvGQlS082fO1ehGBMPXWPF8N+sAHh2I=";
+        });
+        tui = old.tui.overrideAttrs (oldTui: {
+          vendorHash = "sha256-jGaTgKyAvBMt8Js5JrPFUayhVt3QhgyclFoNatoHac4=";
         });
       });
 
