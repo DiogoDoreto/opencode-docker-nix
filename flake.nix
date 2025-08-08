@@ -10,7 +10,7 @@
 
       opencodeCustomVersion = let
         version = "0.3.130";
-      in pkgs.opencode.overrideAttrs (old: {
+      in pkgs.opencode.overrideAttrs (old: rec {
         inherit version;
         src = pkgs.fetchFromGitHub {
           owner = "sst";
@@ -18,6 +18,19 @@
           rev = "v${version}";
           sha256 = "sha256-/FWvHekyAM9U5WLptAr2YbcMOZa/twjucSUnlqfu1Y4=";
         };
+        buildPhase = ''
+          runHook preBuild
+
+          bun build \
+            --define OPENCODE_TUI_PATH="'${tui}/bin/tui'" \
+            --define OPENCODE_VERSION="'${version}'" \
+            --compile \
+            --target=bun-linux-x64 \
+            --outfile=opencode \
+            ./packages/opencode/src/index.ts
+
+          runHook postBuild
+        '';
         tui = old.tui.overrideAttrs (oldTui: {
           vendorHash = "sha256-qsOL6gsZwEm7YcYO/zoyJAnVmciCjPYqPavV77psybU=";
         });
