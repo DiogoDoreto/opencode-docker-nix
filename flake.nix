@@ -9,30 +9,25 @@
       pkgs = import nixpkgs { inherit system; };
 
       opencodeCustomVersion = let
-        version = "0.4.1";
+        version = "0.4.2";
       in pkgs.opencode.overrideAttrs (old: rec {
         inherit version;
         src = pkgs.fetchFromGitHub {
           owner = "sst";
           repo = "opencode";
           rev = "v${version}";
-          sha256 = "sha256-LEFmfsqhCuGcRK7CEPZb6EZfjOHAyYpUHptXu04fjpQ=";
+          sha256 = "sha256-8qXmQfZGuCwlcKDm4hSNiHp8kWGK+liDT9ekUS45wso=";
         };
-        buildPhase = ''
-          runHook preBuild
-
-          bun build \
-            --define OPENCODE_TUI_PATH="'${tui}/bin/tui'" \
-            --define OPENCODE_VERSION="'${version}'" \
-            --compile \
-            --target=bun-linux-x64 \
-            --outfile=opencode \
-            ./packages/opencode/src/index.ts
-
-          runHook postBuild
+        nativeBuildInputs = old.nativeBuildInputs ++ [
+          pkgs.makeBinaryWrapper
+        ];
+        # Wrap the binary with proper library paths to fix libstdc++.so.6 error
+        postFixup = ''
+          wrapProgram $out/bin/opencode \
+            --set LD_LIBRARY_PATH "${pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]}"
         '';
         node_modules = old.node_modules.overrideAttrs (oldNM: {
-          outputHash = "sha256-7Hc3FJcg2dA8AvGQlS082fO1ehGBMPXWPF8N+sAHh2I=";
+          outputHash = "sha256-LmNn4DdnSLVmGS5yqLyk/0e5pCiKfBzKIGRvvwZ6jHY=";
         });
         tui = old.tui.overrideAttrs (oldTui: {
           vendorHash = "sha256-jGaTgKyAvBMt8Js5JrPFUayhVt3QhgyclFoNatoHac4=";
@@ -60,9 +55,6 @@
         fromImage = baseImage;
         config = {
           Cmd = [ "opencode" "." ];
-          Env = [
-            "LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib"
-          ];
           WorkingDir = "/app";
           Volumes = {
             "/app" = {};
