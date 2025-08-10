@@ -60,6 +60,9 @@
         fromImage = baseImage;
         config = {
           Cmd = [ "opencode" "." ];
+          Env = [
+            "LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib"
+          ];
           WorkingDir = "/app";
           Volumes = {
             "/app" = {};
