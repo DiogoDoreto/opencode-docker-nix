@@ -4,3 +4,6 @@ contexts/*
 
 # nix
 /result
+
+# bun
+/node_modules/
