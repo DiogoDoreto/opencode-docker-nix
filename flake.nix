@@ -11,7 +11,7 @@
 
       opencodeCustomVersion =
         let
-          version = "0.4.40";
+          version = "0.5.5";
         in
         pkgs.opencode.overrideAttrs (old: rec {
           inherit version;
@@ -19,21 +19,35 @@
             owner = "sst";
             repo = "opencode";
             rev = "v${version}";
-            sha256 = "sha256-O/tLfLhrSKn4uNaiDge9B6PXgwE+pDTJNp5kzSv5jQA=";
+            sha256 = "sha256-FDAHu7tWa6M6XIargmr+dO722oD6O/nt+vreS3ag8og=";
           };
-          nativeBuildInputs = old.nativeBuildInputs ++ [
-            pkgs.makeBinaryWrapper
-          ];
-          # Wrap the binary with proper library paths to fix libstdc++.so.6 error
-          postFixup = ''
-            wrapProgram $out/bin/opencode \
-              --set LD_LIBRARY_PATH "${pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]}"
-          '';
           node_modules = old.node_modules.overrideAttrs (oldNM: {
-            outputHash = "sha256-ql4qcMtuaRwSVVma3OeKkc9tXhe21PWMMko3W3JgpB0=";
+            outputHash = "sha256-/RdfDi1QMHlwvnx4wHKs2o1QwdGkHSOHG6yH0RtJdws=";
+            patches = [
+              (pkgs.fetchpatch {
+                url = "https://github.com/sst/opencode/commit/5d5ac168a4233ee1f38581ec56b915733b12510c.patch";
+                hash = "sha256-Odfmj2SjNB2phTX8c+rMKCGyPwWooH55vn//uizHr3g=";
+              })
+            ];
+            buildPhase = ''
+              runHook preBuild
+
+              export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+
+              # Disable post-install scripts to avoid shebang issues
+              bun install \
+                --filter=opencode \
+                --force \
+                --frozen-lockfile \
+                --ignore-scripts \
+                --no-progress \
+                --production
+
+              runHook postBuild
+            '';
           });
           tui = old.tui.overrideAttrs (oldTui: {
-            vendorHash = "sha256-/BI9vBMSJjt0SHczH8LkxxWC2hiPPKQwfRhmf2/8+TU=";
+            vendorHash = "sha256-acDXCL7ZQYW5LnEqbMgDwpTbSgtf4wXnMMVtQI1Dv9s=";
           });
         });
 
