@@ -1,7 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": false,
-  "theme": "monokai",
+  "theme": "system",
   "model": "github-copilot/gpt-4.1",
-  "instructions": ["CONVENTIONS.md"]
+  "instructions": [
+    "CONVENTIONS.md"
+  ]
 }
