@@ -3,12 +3,35 @@ import { mkdirSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { cwd } from 'node:process'
 import readline from 'node:readline/promises'
+import { parseArgs } from 'node:util'
 
 const contextDir = join(__dirname, 'contexts')
 const globalContext = join(contextDir, 'global')
 
-const projectPath = cwd()
-const projectName = basename(projectPath)
+const { values } = parseArgs({
+    args: Bun.argv,
+    options: {
+        'project-path': { type: 'string', short: 'p' },
+        'project-name': { type: 'string', short: 'n' },
+        'help': { type: 'boolean', short: 'h' },
+    },
+    strict: true,
+    allowPositionals: true,
+})
+
+if (values.help) {
+  console.log(`Usage: oc [--project-path <path>] [--project-name <name>] [--help]
+
+Options:
+  --project-path, -p   Path to the project directory (default: current working directory)
+  --project-name, -n   Name of the project (default: basename of project path)
+  --help, -h           Show this help message and exit
+`)
+  process.exit(0)
+}
+
+const projectPath = values['project-path'] || cwd()
+const projectName = values['project-name'] || basename(projectPath)
 const projectLocalContext = join(contextDir, projectName, '.local')
 const containerName = `opencode-${projectName}`
 
